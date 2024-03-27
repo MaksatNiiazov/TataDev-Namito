@@ -1,50 +1,23 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from .models import CustomUser
+from .serializers import CustomUserSerializer
+from .utils import send_sms, generate_confirmation_code
 
-from .serializers import (
-    CustomUserRegistrationSerializer, 
-    CustomUserLoginSerializer, 
-    CustomUserProfileSerializer,
-    )
-
-
-class CustomUserRegistrationView(generics.CreateAPIView):
-    serializer_class = CustomUserRegistrationSerializer
-    permission_classes = [permissions.AllowAny]
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            user = serializer.save()
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
+        phone_number = request.data.get('phone_number')
+        if not phone_number:
+            return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        confirmation_code = generate_confirmation_code()
 
-class CustomUserLoginView(generics.GenericAPIView):
-    serializer_class = CustomUserLoginSerializer
-    permission_classes = [permissions.AllowAny]
+        send_sms(phone_number, confirmation_code)
 
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
+        user = CustomUser.objects.create(phone_number=phone_number)
+        serializer = CustomUserSerializer(user)
 
-
-class CustomUserProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = CustomUserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

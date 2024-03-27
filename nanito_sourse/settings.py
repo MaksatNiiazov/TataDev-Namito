@@ -139,3 +139,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     
 }
+
+NIKITA_SMS_API_KEY='a74681207fe672beffbffe62bbe3c74d'
