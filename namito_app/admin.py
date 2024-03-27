@@ -14,9 +14,3 @@ class MetaInfoAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('data_for',)}
     inlines = [MetaTagInline]
 
-
-@admin.register(MetaTag)
-class MetaTagAdmin(admin.ModelAdmin):
-    list_display = ('key', 'value', 'meta_info')
-    list_filter = ('meta_info',)
-    search_fields = ('key', 'value', 'meta_info__data_for')

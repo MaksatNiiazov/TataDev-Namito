@@ -8,6 +8,9 @@ class MetaInfo(models.Model):
     data_for = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
 
+    class Meta:
+        verbose_name_plural = "MetaInfo's"
+
     def save(self, *args, **kwargs):
         self.slug = slugify(self.data_for)
         super().save(*args, **kwargs)
