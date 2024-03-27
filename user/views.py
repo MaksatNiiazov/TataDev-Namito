@@ -1,8 +1,16 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import CustomUser
-from .serializers import CustomUserSerializer, VerifyCodeSerializer
-from .utils import send_sms, generate_confirmation_code
+from .serializers import (
+    CustomUserSerializer, 
+    VerifyCodeSerializer,
+    )
+from .utils import (
+    send_sms, 
+    generate_confirmation_code,
+    )
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -29,7 +37,6 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 class VerifyCodeView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
     serializer_class = VerifyCodeSerializer  
 
     def create(self, request, *args, **kwargs):
@@ -45,5 +52,8 @@ class VerifyCodeView(generics.CreateAPIView):
         user.is_verified = True
         user.save()
 
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Создание и выдача токенов
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        return Response({'access_token': access_token, 'refresh_token': str(refresh)}, status=status.HTTP_200_OK)
