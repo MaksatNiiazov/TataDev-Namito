@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Installed & created
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
     'user',
     'catalog',
 
@@ -139,6 +140,7 @@ SIMPLEUI_ICON = {
     "Categories": "fa fa-folder",
     "Products": "fa fa-cube",
     "Variants": "fa fa-cubes",
+    "Sizes": "fa fa-arrows",
 
 }
 
