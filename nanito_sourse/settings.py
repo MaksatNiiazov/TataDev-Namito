@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,7 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Installed & created
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'user',
     'catalog',
+
+
 ]
 
 MIDDLEWARE = [
@@ -83,6 +90,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'user.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -131,18 +139,17 @@ SIMPLEUI_ICON = {
     "Categories": "fa fa-folder",
     "Decoration charges": "fa fa-usd",
     "Decoration locations": "fa fa-map-pin",
-    # "Decoration types": "fa fa-cog",
-    # "Products": "fa fa-cube",
-    # "Variants": "fa fa-cubes",
-    # "Customers": "fa fa-users",
-    # "Django Q": "fa fa-minus-circle",
-    # "Failed tasks": "fa fa-minus-circle",
-    # "Successful tasks": "fa fa-minus-circle",
-    # "Scheduled tasks": "fa fa-minus-circle",
-    # "Logistics": "fa fa-truck",
-    # "Charges": "fa fa-usd",
-    # "Cities": "fa fa-building",
-    # "Fobs": "fa fa-industry",
-    # "Category mappings": "fa fa-cogs",
-    # "Suppliers": "fa fa-male",
+
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     
+}
+
