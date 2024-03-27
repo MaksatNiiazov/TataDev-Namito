@@ -31,12 +31,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "simpleui",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'catalog',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +124,25 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SIMPLEUI_ICON = {
+    "Catalog": "fa fa-shopping-bag",
+    "Categories": "fa fa-folder",
+    "Decoration charges": "fa fa-usd",
+    "Decoration locations": "fa fa-map-pin",
+    # "Decoration types": "fa fa-cog",
+    # "Products": "fa fa-cube",
+    # "Variants": "fa fa-cubes",
+    # "Customers": "fa fa-users",
+    # "Django Q": "fa fa-minus-circle",
+    # "Failed tasks": "fa fa-minus-circle",
+    # "Successful tasks": "fa fa-minus-circle",
+    # "Scheduled tasks": "fa fa-minus-circle",
+    # "Logistics": "fa fa-truck",
+    # "Charges": "fa fa-usd",
+    # "Cities": "fa fa-building",
+    # "Fobs": "fa fa-industry",
+    # "Category mappings": "fa fa-cogs",
+    # "Suppliers": "fa fa-male",
+}
