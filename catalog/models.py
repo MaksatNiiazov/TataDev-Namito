@@ -2,19 +2,37 @@ import html
 import re
 from django.db import models
 from django.utils.text import slugify
+from mptt.models import MPTTModel, TreeForeignKey
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
-
-    def __str__(self):
-        return self.name
+class Category(MPTTModel, models.Model):
+    CATEGORY_TYPES = [(0, "For men"), (1, "For woman"), (2, "For children"), (3, "Unisex")]
+    name = models.CharField(max_length=255)
+    type = models.IntegerField(choices=CATEGORY_TYPES, default=3)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    image = models.ImageField(null=True, blank=True)
+    parent = TreeForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
+    order = models.IntegerField(blank=True, null=True, default=0)
+    meta_title = models.CharField(max_length=59, blank=True)
+    meta_description = models.CharField(max_length=160, blank=True)
 
     class Meta:
-        verbose_name_plural = 'Categories'
+        verbose_name_plural = "Categories"
 
+    class MPTTMeta:
+        order_insertion_by = ["order"]
+
+    def save(self, *args, **kwargs):
+        base_slug = slugify(self.name)
+        counter = 0
+
+        unique_slug = base_slug
+        while Category.objects.filter(slug=unique_slug).exists():
+            counter += 1
+            unique_slug = f"{base_slug}-{counter}"
+
+        self.slug = unique_slug
+        super().save(*args, **kwargs)
 
 # class Tag(models.Model):
 #     name = models.CharField(max_length=100)
@@ -28,7 +46,7 @@ class Product(models.Model):
     description = models.TextField()
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     meta_title = models.CharField(max_length=59, blank=True, null=True)
-    meta_description = models.CharField(max_length=160, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
     keywords = models.JSONField(null=True, blank=True)
     # tags = models.ManyToManyField(Tag, related_name='products')
 

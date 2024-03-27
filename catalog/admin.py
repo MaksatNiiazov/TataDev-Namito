@@ -1,11 +1,17 @@
 from django.contrib import admin
+from mptt.admin import DraggableMPTTAdmin
+
 from .models import Category, Product, Color, Size, Variant, Image
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(DraggableMPTTAdmin):
     list_display = ['name', 'parent']
     search_fields = ['name']
+    list_display_links = ("name",)
+
+    mptt_level_indent = 20
+
 
 
 class VariantInline(admin.TabularInline):
