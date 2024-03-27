@@ -20,6 +20,8 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=15, unique=True)
+    code = models.CharField(max_length=4, blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 

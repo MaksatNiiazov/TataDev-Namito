@@ -25,6 +25,7 @@ SECRET_KEY = 'django-insecure-4m1su91o0wh!e!g0dwvck7#^ti+&3oo@myvl@g^=qn8+s)n+12
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+PRODUCTION = True
 
 ALLOWED_HOSTS = []
 
@@ -32,16 +33,24 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "simpleui",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # Installed & created
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
+    'mptt',
+
     'user',
+    'catalog',
+    'namito_app',
+
 
 ]
 
@@ -129,6 +138,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+SIMPLEUI_ICON = {
+    "Catalog": "fa fa-book",
+    "Categories": "fa fa-folder",
+    "Products": "fa fa-cube",
+    "Variants": "fa fa-cubes",
+    "Sizes": "fa fa-arrows",
+
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -139,5 +158,3 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     
 }
-
-NIKITA_SMS_API_KEY='a74681207fe672beffbffe62bbe3c74d'
