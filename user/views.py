@@ -1,50 +1,49 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from .serializers import (
-    CustomUserRegistrationSerializer, 
-    CustomUserLoginSerializer, 
-    CustomUserProfileSerializer,
-    )
+from .models import CustomUser
+from .serializers import CustomUserSerializer, VerifyCodeSerializer
+from .utils import send_sms, generate_confirmation_code
 
 
-class CustomUserRegistrationView(generics.CreateAPIView):
-    serializer_class = CustomUserRegistrationSerializer
-    permission_classes = [permissions.AllowAny]
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            user = serializer.save()
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
+        phone_number = request.data.get('phone_number')
+        if not phone_number:
+            return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        existing_user = CustomUser.objects.filter(phone_number=phone_number).exists()
+        if existing_user:
+            return Response({'error': 'User with this phone number already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        confirmation_code = generate_confirmation_code()
+
+        user = CustomUser.objects.create(phone_number=phone_number, code=confirmation_code)
+        serializer = CustomUserSerializer(user)
+
+        send_sms(phone_number, confirmation_code)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CustomUserLoginView(generics.GenericAPIView):
-    serializer_class = CustomUserLoginSerializer
-    permission_classes = [permissions.AllowAny]
+class VerifyCodeView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = VerifyCodeSerializer  
 
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
+    def create(self, request, *args, **kwargs):
+        code = request.data.get('code')
 
+        if not code:
+            return Response({'error': 'Code is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-class CustomUserProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = CustomUserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+        user = CustomUser.objects.filter(code=code).first()
+        if not user:
+            return Response({'error': 'Invalid code.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_object(self):
-        return self.request.user
+        user.is_verified = True
+        user.save()
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
