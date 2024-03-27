@@ -22,6 +22,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=15, unique=True)
     code = models.CharField(max_length=4, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    full_name = models.CharField(max_length=255, blank=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    email = models.EmailField(blank=True)
 
     objects = CustomUserManager()
 

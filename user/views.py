@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -6,6 +6,7 @@ from .models import CustomUser
 from .serializers import (
     CustomUserSerializer, 
     VerifyCodeSerializer,
+    UserProfileSerializer
     )
 from .utils import (
     send_sms, 
@@ -13,7 +14,7 @@ from .utils import (
     )
 
 
-class UserRegistrationView(generics.CreateAPIView):
+class UserLoginView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
 
@@ -22,33 +23,35 @@ class UserRegistrationView(generics.CreateAPIView):
         if not phone_number:
             return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        existing_user = CustomUser.objects.filter(phone_number=phone_number).exists()
-        if existing_user:
-            return Response({'error': 'User with this phone number already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Генерация и отправка кода подтверждения
         confirmation_code = generate_confirmation_code()
-
-        user = CustomUser.objects.create(phone_number=phone_number, code=confirmation_code)
-        serializer = CustomUserSerializer(user)
-
         send_sms(phone_number, confirmation_code)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Сохранение кода подтверждения в базе данных
+        CustomUser.objects.update_or_create(
+            phone_number=phone_number,
+            defaults={'code': confirmation_code}
+        )
+
+        return Response({'message': 'Confirmation code sent successfully.'}, status=status.HTTP_200_OK)
 
 
 class VerifyCodeView(generics.CreateAPIView):
     serializer_class = VerifyCodeSerializer  
 
     def create(self, request, *args, **kwargs):
+        phone_number = request.data.get('phone_number')
         code = request.data.get('code')
 
         if not code:
-            return Response({'error': 'Code is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Сode are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Проверка кода подтверждения
         user = CustomUser.objects.filter(code=code).first()
         if not user:
             return Response({'error': 'Invalid code.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Помечаем пользователя как верифицированного и сохраняем
         user.is_verified = True
         user.save()
 
@@ -57,3 +60,15 @@ class VerifyCodeView(generics.CreateAPIView):
         access_token = str(refresh.access_token)
 
         return Response({'access_token': access_token, 'refresh_token': str(refresh)}, status=status.HTTP_200_OK)
+
+
+class UserProfileUpdateView(generics.UpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
