@@ -43,8 +43,10 @@ INSTALLED_APPS = [
     # Installed & created
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
     'user',
     'catalog',
+    'namito_app',
 
 
 ]
@@ -135,10 +137,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 SIMPLEUI_ICON = {
-    "Catalog": "fa fa-shopping-bag",
+    "Catalog": "fa fa-book",
     "Categories": "fa fa-folder",
-    "Decoration charges": "fa fa-usd",
-    "Decoration locations": "fa fa-map-pin",
+    "Products": "fa fa-cube",
+    "Variants": "fa fa-cubes",
+    "Sizes": "fa fa-arrows",
 
 }
 

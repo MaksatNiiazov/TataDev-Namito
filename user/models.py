@@ -26,7 +26,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=150)
-    birth_date = models.DateField()
+    birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/')
     phone_number = models.CharField(max_length=15)
     is_active = models.BooleanField(default=True)
