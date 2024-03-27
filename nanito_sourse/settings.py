@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'user',
     'catalog',
+    'namito_app',
 
 
 ]
